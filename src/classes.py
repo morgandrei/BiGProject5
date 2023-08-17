@@ -1,5 +1,18 @@
+import os
+
+import psycopg2
+
+
 class DBManager:
     """класс для работы с данными в БД."""
+    password = os.getenv("PASSQL")
+
+    conn = psycopg2.connect(
+        host="localhost",
+        database="north",
+        user="postgres",
+        password=password
+    )
 
     def get_companies_and_vacancies_count(self):
         """Получает список всех компаний и количество вакансий у каждой компании."""
