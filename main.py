@@ -1,7 +1,16 @@
-from src.utils import get_employers
-import json
 
+import json
+from src.classes import Parser, DBCreator, DBManager
+filename = "config.ini"
 url = "https://api.hh.ru/employers"
-keyword = ['СБЕР', 'Яндекс', 'Тинькофф', 'Почта России', 'Ventra', 'Лаборатория Касперского', 'МегаФон', 'ВкусВилл', 'VK', 'СИБУР, Группа компаний']
-for employer in keyword:
-    print(json.dumps(get_employers(employer, url), ensure_ascii=False, indent=2))
+employers = ['СБЕР', 'Яндекс', 'Тинькофф', 'Почта России', 'Ventra', 'Лаборатория Касперского', 'МегаФон', 'ВкусВилл', 'VK', 'СИБУР, Группа компаний']
+
+
+
+db_creator = DBCreator(filename)
+
+
+
+for employer in employers:
+    hh_parser = Parser(url, employer)
+    print(json.dumps(hh_parser.get_employers(), ensure_ascii=False, indent=2))
