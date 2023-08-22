@@ -7,9 +7,12 @@ import requests
 
 class Parser:
     """Класс для парсинга hh.ru"""
+
     def __init__(self, url: str, employer: str):
+        self.employer_url = None
         self.url = url
         self.employer = employer
+
     def get_employers(self):
         """
         Метод для получения списка работодателей с платформы HeadHunter
@@ -30,7 +33,10 @@ class Parser:
                     self.employer_url = el['vacancies_url']
                     return el
 
-    def get_vacancies(self, self.employer_url):
+    def get_vacancies_url(self):
+        return self.employer_url
+
+    def get_vacancies(self):
         """
         Метод для получения списка вакансий определенного работодателя с платформы HeadHunter
         """
@@ -39,23 +45,23 @@ class Parser:
             params = {'per_page': 100,
                       'page': page,
                       'search_field': 'name',
+                      'area': 1,
                       'order_by': "publication_time",
                       'archived': False,
                       }
-            vacancies = requests.get(url, params=params).json()
+            vacancies = requests.get(self.employer_url, params=params).json()
             vacancies_lst.extend(vacancies['items'])
             if (vacancies['pages'] - page) <= 1:
                 break
             time.sleep(0.5)
         return vacancies_lst
 
+
 class DBCreator:
-    """
-    Класс для создания базы данных, создания и заполнения таблиц
-    """
+    """Класс для создания базы данных, создания и заполнения таблиц"""
+
     def __init__(self, filename):
         self.filename = filename
-
 
     def config(self, section="postgresql"):
         """Метод получает словарь из файла с параметрами для подключения к БД"""
@@ -73,6 +79,11 @@ class DBCreator:
                 'Section {0} is not found in the {1} file.'.format(section, self.filename))
         return db
 
+    def db_creator(self):
+        pass
+
+    def table_create(self):
+        pass
 
 
 class DBManager:
