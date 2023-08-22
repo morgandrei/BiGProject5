@@ -57,45 +57,45 @@ class Parser:
         return vacancies_lst
 
 
-class DBCreator:
-    """Класс для создания базы данных, создания и заполнения таблиц"""
+class DB:
+    """Класс для подключения к базе данных"""
 
-    def __init__(self, filename):
+    def __init__(self, filename="config.ini", section="postgresql", password=os.getenv("PASSQL")):
         self.filename = filename
+        self.db = {}
 
-    def config(self, section="postgresql"):
-        """Метод получает словарь из файла с параметрами для подключения к БД"""
-        # create a parser
-        parser = ConfigParser()
-        # read config file
-        parser.read(self.filename)
-        db = {}
+
+
+        parser = ConfigParser()  # create a parser
+        parser.read(self.filename)  # read config file
+
         if parser.has_section(section):
-            params = parser.items(section)
-            for param in params:
-                db[param[0]] = param[1]
+            self.params = parser.items(section)
+            for param in self.params:
+                self.db[param[0]] = param[1]
         else:
             raise Exception(
                 'Section {0} is not found in the {1} file.'.format(section, self.filename))
-        return db
 
-    def db_creator(self):
-        pass
+
+        conn = psycopg2.connect(
+            host="localhost",
+            database="north",
+            user="postgres",
+            password=password
+        )
+
+
+class DBCreator(DB):
+    """Класс для создания базы данных, создания и заполнения таблиц"""
+
 
     def table_create(self):
         pass
 
 
-class DBManager:
+class DBManager(DB):
     """класс для работы с данными в БД."""
-    password = os.getenv("PASSQL")
-
-    conn = psycopg2.connect(
-        host="localhost",
-        database="north",
-        user="postgres",
-        password=password
-    )
 
     def get_companies_and_vacancies_count(self):
         """Получает список всех компаний и количество вакансий у каждой компании."""

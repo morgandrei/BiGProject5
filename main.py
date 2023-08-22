@@ -1,7 +1,7 @@
 import json
 from src.classes import Parser, DBCreator, DBManager
 def main():
-    filename = "config.ini"
+
     url = "https://api.hh.ru/employers"
     employers = ['СБЕР', 'Яндекс', 'Тинькофф', 'Почта России', 'Ventra', 'Лаборатория Касперского', 'МегаФон', 'ВкусВилл',
                  'VK', 'СИБУР, Группа компаний']
