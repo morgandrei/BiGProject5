@@ -1,45 +1,19 @@
+import psycopg2
 import requests
 import time
 import json
+from configparser import ConfigParser
 
 
-
-
-#print(json.dumps(get_vacancies(keyword, url), ensure_ascii=False, indent=2))
-
-def get_vacansies_by_employer(keyword):
-    vacancies_lst = []
-    for page in range(20):
-        params = {'per_page': 100,
-                  'page': page,
-                  'employer': keyword,
-                  'search_field': 'name',
-                  'order_by': "publication_time",
-                  'archived': False,
-                  }
-        vacancies = requests.get("https://api.hh.ru/employers/3529", params=params).json()
-        vacancies_lst.extend(vacancies['items'])
-        return vacancies_lst
-
-def get_vacancies(url):
-    """
-    Получение списка вакансий с платформы HeadHunter
-    """
-    vacancies_lst = []
-    for page in range(5):
-        params = {'per_page': 100,
-                    'page': page,
-#                    'text': keyword,
-                    'search_field': 'name',
-                    'order_by': "publication_time",
-                    'archived': False,
-                    }
-        vacancies = requests.get(url, params=params).json()
-        vacancies_lst.extend(vacancies['items'])
-        if (vacancies['pages'] - page) <= 1:
-            break
-        time.sleep(0.5)
-    return vacancies_lst
-
-print(json.dumps(get_vacancies("https://api.hh.ru/vacancies?employer_id=3809"), ensure_ascii=False, indent=2))
-#rint(get_vacancies("https://api.hh.ru/vacancies?employer_id=3809"))
+def config(filename="config.ini", section="postgresql"):
+    parser = ConfigParser()  # create a parser
+    parser.read(filename)  # read config file
+    db = {}
+    if parser.has_section(section):
+        params = parser.items(section)
+        for param in params:
+            db[param[0]] = param[1]
+    else:
+        raise Exception(
+            'Section {0} is not found in the {1} file.'.format(section, filename))
+    return db

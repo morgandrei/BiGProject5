@@ -3,6 +3,7 @@ from configparser import ConfigParser
 import time
 import psycopg2
 import requests
+from src.utils import config
 
 
 class Parser:
@@ -31,7 +32,7 @@ class Parser:
             for el in employers_lst:
                 if el['name'] == self.employer and el['open_vacancies'] > 10:
                     self.employer_url = el['vacancies_url']
-                    return el
+                    return [el['id'], el['name'], el['open_vacancies'], el['vacancies_url']]
 
     def get_vacancies_url(self):
         return self.employer_url
@@ -60,42 +61,59 @@ class Parser:
 class DB:
     """Класс для подключения к базе данных"""
 
-    def __init__(self, filename="config.ini", section="postgresql", password=os.getenv("PASSQL")):
-        self.filename = filename
-        self.db = {}
+    def __init__(self, db_name: str):
+        self.__params = config()
+        self.conn = psycopg2.connect(dbname='postgres', **self.__params)
+        self.conn.autocommit = True
+        self.cur = self.conn.cursor()
+        self.cur.execute(f"CREATE DATABASE {db_name}")
+        self.conn.close()
+        self.__params.update({'dbname': db_name})
+        self.conn = psycopg2.connect(**self.__params)
+        self.conn.autocommit = True
+        self.cur = self.conn.cursor()
 
-
-
-        parser = ConfigParser()  # create a parser
-        parser.read(self.filename)  # read config file
-
-        if parser.has_section(section):
-            self.params = parser.items(section)
-            for param in self.params:
-                self.db[param[0]] = param[1]
-        else:
-            raise Exception(
-                'Section {0} is not found in the {1} file.'.format(section, self.filename))
-
-
-        conn = psycopg2.connect(
-            host="localhost",
-            database="north",
-            user="postgres",
-            password=password
-        )
+    def conn_close(self):
+        return self.conn.close()
 
 
 class DBCreator(DB):
-    """Класс для создания базы данных, создания и заполнения таблиц"""
+    """Класс для создания и заполнения таблиц"""
 
+    def __init__(self, db_name: str):
+        super().__init__(db_name)
 
-    def table_create(self):
-        pass
+    def create_employers_table(self):
+        self.cur.execute('''CREATE TABLE employers
+                            (
+                                company_id int PRIMARY KEY,
+                                company_name varchar(100) NOT NULL,
+                                open_vacancies int
+                            )'''
+                         )
 
+    def create_vacancies_table(self):
+        self.cur.execute('''CREATE TABLE vacancies
+                                    (
+                                        vacancy_id int NOT NULL,
+                                        company_id int NOT NULL,
+                                        title varchar(100),
+                                        salary_from int,
+                                        salary_to int,
+                                        vacancy_url varchar(100),
+                                        description varchar(100)
+                                    )'''
+                         )
+        self.cur.execute("""ALTER TABLE vacancies ADD CONSTRAINT fk_company_id 
+                            FOREIGN KEY(company_id) REFERENCES employers(company_id)""")
+
+    def into_table(self, *args, name):
+        self.cur.execute(f"INSERT INTO {name} VALUES {args}")
 
 class DBManager(DB):
     """класс для работы с данными в БД."""
+    def __init__(self, db_name: str):
+        super().__init__(db_name)
 
     def get_companies_and_vacancies_count(self):
         """Получает список всех компаний и количество вакансий у каждой компании."""
@@ -117,3 +135,5 @@ class DBManager(DB):
     def get_vacancies_with_keyword(self, keyword):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например 'python'."""
         pass
+
+# qwer = DBCreator("qwerty")
