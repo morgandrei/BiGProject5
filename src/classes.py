@@ -39,7 +39,7 @@ class Parser:
 
     def get_vacancies(self):
         """
-        Метод для получения списка вакансий определенного работодателя с платформы HeadHunter
+        Метод для получения списка вакансий определенного работодателя с платформы HeadHunter по Москве
         """
         vacancies_lst = []
         for page in range(20):
@@ -101,7 +101,7 @@ class DBCreator(DB):
                                         salary_from int,
                                         salary_to int,
                                         vacancy_url varchar(100),
-                                        description varchar(100)
+                                        description text
                                     )'''
                          )
         self.cur.execute("""ALTER TABLE vacancies ADD CONSTRAINT fk_company_id 
@@ -136,4 +136,3 @@ class DBManager(DB):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например 'python'."""
         pass
 
-# qwer = DBCreator("qwerty")
