@@ -128,11 +128,22 @@ class DBManager:
     def get_all_vacancies(self):
         """Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на
         вакансию."""
-        self.cur.execute("""SELECT company_name, title, vacancy_url FROM employers
+        self.cur.execute("""SELECT company_name, title, salary_from, salary_to, vacancy_url FROM employers
                             FULL JOIN vacancies USING(company_id)""")
         result = self.cur.fetchall()
         for row in result:
-            print(f'{row}')
+            if row[2] == 0 and row[3] == 0:
+                salary = 'Не указана'
+            elif row[2] == 0 and row[3] != 0:
+                salary = f'до {row[3]}'
+            elif row[2] != 0 and row[3] == 0:
+                salary = f'от {row[2]}'
+            elif row[2] == row[3]:
+                salary = row[2]
+            else:
+                salary = f'{row[2]} - {row[3]}'
+            print(f'Компания "{row[0]}", Вакансия: "{row[1]}", зарплата: {salary}, ссылка на вакансию: "{row[4]}"')
+        print('')
 
     def get_avg_salary(self):
         """Получает среднюю зарплату по вакансиям."""
