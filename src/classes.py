@@ -157,5 +157,9 @@ class DBManager:
 
     def get_vacancies_with_keyword(self, keyword):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например 'python'."""
-        self.cur.execute(f"SELECT * FROM employers")
-        self.cur.fetchall()
+        self.cur.execute(f"""SELECT company_name, title, vacancy_url FROM employers
+                            FULL JOIN vacancies USING(company_id) WHERE title LIKE '%{keyword}%'""")
+        result = self.cur.fetchall()
+        for row in result:
+            print(f'Компания "{row[0]}", вакансия: {row[1]}, ссылка на вакансию: {row[2]}')
+        print('')

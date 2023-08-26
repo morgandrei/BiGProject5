@@ -11,7 +11,7 @@ def main():
     new_bd = DBCreator(db_name)  # Создаем экземпляр класса для создания базы данных, создания и заполнения таблиц
     new_bd.create_employers_table()  #
     new_bd.create_vacancies_table()  #
-    print(f"Создана новая база данных '{db_name}'")
+    print(f"Создана новая база данных '{db_name}'\n")
 
     for employer in employers:
         hh_parser = Parser(url, employer)
@@ -23,7 +23,7 @@ def main():
         for vac in vacancies_lst:
             args_vacancy = format_salary_description(vac)
             new_bd.into_table(*args_vacancy, name='vacancies')
-        print(f"Вакансии '{vac['employer']['name']}' успешно добавлены в базу данных")
+        print(f"Вакансии '{vac['employer']['name']}' успешно добавлены в базу данных\n")
 
     queryes = DBManager(db_name)
     while True:
