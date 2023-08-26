@@ -58,8 +58,8 @@ class Parser:
         return vacancies_lst
 
 
-class DB:
-    """Класс для подключения к базе данных"""
+class DBCreator:
+    """Класс для создания и заполнения таблиц"""
 
     def __init__(self, db_name: str):
         self.__params = config()
@@ -72,16 +72,6 @@ class DB:
         self.conn = psycopg2.connect(**self.__params)
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
-
-    def conn_close(self):
-        return self.conn.close()
-
-
-class DBCreator(DB):
-    """Класс для создания и заполнения таблиц"""
-
-    def __init__(self, db_name: str):
-        super().__init__(db_name)
 
     def create_employers_table(self):
         self.cur.execute('''CREATE TABLE employers
@@ -110,29 +100,51 @@ class DBCreator(DB):
     def into_table(self, *args, name):
         self.cur.execute(f"INSERT INTO {name} VALUES {args}")
 
-class DBManager(DB):
+    def conn_close(self):
+        return self.conn.close()
+
+
+class DBManager:
     """класс для работы с данными в БД."""
+
     def __init__(self, db_name: str):
-        super().__init__(db_name)
+        self.__params = config()
+        self.__params.update({'dbname': db_name})
+        self.conn = psycopg2.connect(**self.__params)
+        self.conn.autocommit = True
+        self.cur = self.conn.cursor()
+
+    def conn_close(self):
+        return self.conn.close()
 
     def get_companies_and_vacancies_count(self):
         """Получает список всех компаний и количество вакансий у каждой компании."""
-        pass
+        self.cur.execute("SELECT * FROM employers")
+        result = self.cur.fetchall()
+        for row in result:
+            print(f'Компания "{row[1]}", открыто вакансий: {row[2]}')
+        print('')
 
     def get_all_vacancies(self):
         """Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на
         вакансию."""
-        pass
+        self.cur.execute("""SELECT company_name, title, vacancy_url FROM employers
+                            FULL JOIN vacancies USING(company_id)""")
+        result = self.cur.fetchall()
+        for row in result:
+            print(f'{row}')
 
     def get_avg_salary(self):
         """Получает среднюю зарплату по вакансиям."""
-        pass
+        self.cur.execute("SELECT * FROM employers")
+        self.cur.fetchall()
 
     def get_vacancies_with_higher_salary(self):
         """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
-        pass
+        self.cur.execute("SELECT * FROM employers")
+        self.cur.fetchall()
 
     def get_vacancies_with_keyword(self, keyword):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например 'python'."""
-        pass
-
+        self.cur.execute(f"SELECT * FROM employers")
+        self.cur.fetchall()

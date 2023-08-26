@@ -19,3 +19,32 @@ def config(filename="config.ini", section="postgresql"):
     return db
 
 
+def format_salary_description(vac):
+    """Функция для форматирования некоторых полей описания вакансии"""
+
+    if vac['snippet']['requirement'] is None:
+        requirement = ''
+    else:
+        requirement = vac['snippet']['requirement']
+    if vac['snippet']['responsibility'] is None:
+        responsibility = ''
+    else:
+        responsibility = vac['snippet']['responsibility']
+    description = requirement + responsibility
+    edit_description = description.replace('\'', '')
+    if vac['salary'] is None:
+        salary_from = 0
+        salary_to = 0
+    else:
+        if vac['salary']['from'] is not None:
+            salary_from = vac['salary']['from']
+        else:
+            salary_from = 0
+
+        if vac['salary']['to'] is not None:
+            salary_to = vac['salary']['to']
+        else:
+            salary_to = 0
+    args_vacancy = [vac['id'], vac['employer']['id'], vac['name'], salary_from, salary_to,
+                    vac['alternate_url'], edit_description]
+    return args_vacancy

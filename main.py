@@ -1,52 +1,56 @@
 from src.classes import Parser, DBCreator, DBManager
+from src.utils import format_salary_description
 
 
 def main():
     url = "https://api.hh.ru/employers"
     employers = ['СБЕР', 'Яндекс', 'Тинькофф', 'Почта России', 'Ventra', 'Лаборатория Касперского', 'МегаФон',
-                 'ВкусВилл',
-                 'VK', 'СИБУР, Группа компаний']
+                 'ВкусВилл', 'VK', 'СИБУР, Группа компаний']
 
     db_name = input("Введите имя новой базы данных: ")
-    new_bd = DBCreator(db_name)
+    new_bd = DBCreator(db_name)  # Создаем экземпляр класса для создания базы данных, создания и заполнения таблиц
     new_bd.create_employers_table()  #
     new_bd.create_vacancies_table()  #
     print(f"Создана новая база данных '{db_name}'")
 
     for employer in employers:
         hh_parser = Parser(url, employer)
-
-        #       employers_list.append(hh_parser.get_employers())
         args_employer = hh_parser.get_employers()
         new_bd.into_table(*args_employer[:3], name='employers')  #
-        print(args_employer[-1:])
+        print(f"Работодатель '{employer}' успешно добавлен в базу данных")
+        vacancies_lst = hh_parser.get_vacancies()
 
-        for vac in hh_parser.get_vacancies():
-            if vac['snippet']['requirement'] is None:
-                requirement = ''
-            else:
-                requirement = vac['snippet']['requirement']
-            if vac['snippet']['responsibility'] is None:
-                responsibility = ''
-            else:
-                responsibility = vac['snippet']['responsibility']
-            description = requirement + responsibility
-            edit_description = description.replace('\'', '')
-            if vac['salary'] is None:
-                salary_from = 0
-                salary_to = 0
-            else:
-                if vac['salary']['from'] is not None:
-                    salary_from = vac['salary']['from']
-                if vac['salary']['to'] is not None:
-                    salary_to = vac['salary']['to']
-            args_vacancy = [vac['id'], vac['employer']['id'], vac['name'], salary_from, salary_to,
-                            vac['alternate_url'], edit_description]
-
+        for vac in vacancies_lst:
+            args_vacancy = format_salary_description(vac)
             new_bd.into_table(*args_vacancy, name='vacancies')
+        print(f"Вакансии '{vac['employer']['name']}' успешно добавлены в базу данных")
 
+    queryes = DBManager(db_name)
+    while True:
+        query = input('''Выберете действие: 1 - Вывести список всех компаний и количество вакансий у каждой компании.
+                    2 - Вывести список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию.
+                    3 - Вывести среднюю зарплату по вакансиям.
+                    4 - Вывести список всех вакансий, у которых зарплата выше средней по всем вакансиям.
+                    5 - Вывести список всех вакансий, в названии которых содержится ключевое слово.
+                    0 - Выход.''')
+        if query == '1':
+            queryes.get_companies_and_vacancies_count()
 
-    new_bd.conn_close()
+        elif query == '2':
+            queryes.get_all_vacancies()
+        elif query == '3':
+            queryes.get_avg_salary()
+        elif query == '4':
+            queryes.get_vacancies_with_higher_salary()
+        elif query == '5':
+            keyword = input('Введите ключевое слово: ')
+            queryes.get_vacancies_with_keyword(keyword)
+        elif query == '0':
+            print('До свидания!')
+            new_bd.conn_close()
+            break
+        else:
+            print('Нет такого запроса, попробуйте еще раз...')
 
 
 if __name__ == '__main__':
