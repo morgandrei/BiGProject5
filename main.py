@@ -16,13 +16,13 @@ def main():
     for employer in employers:
         hh_parser = Parser(url, employer)
         args_employer = hh_parser.get_employers()
-        new_bd.into_table(*args_employer[:3], name='employers')  #
+        new_bd.into_table_employers(*args_employer[:3], name='employers')  #
         print(f"Работодатель '{employer}' успешно добавлен в базу данных")
         vacancies_lst = hh_parser.get_vacancies()
 
         for vac in vacancies_lst:
             args_vacancy = format_salary_description(vac)
-            new_bd.into_table(*args_vacancy, name='vacancies')
+            new_bd.into_table_vacancies(args_vacancy)   #(*args_vacancy, name='vacancies')
         print(f"Вакансии '{vac['employer']['name']}' успешно добавлены в базу данных\n")
 
     queryes = DBManager(db_name)

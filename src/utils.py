@@ -33,18 +33,18 @@ def format_salary_description(vac):
     description = requirement + responsibility
     edit_description = description.replace('\'', '')
     if vac['salary'] is None:
-        salary_from = 0
-        salary_to = 0
+        salary_from = None
+        salary_to = None
     else:
         if vac['salary']['from'] is not None:
             salary_from = vac['salary']['from']
         else:
-            salary_from = 0
+            salary_from = None
 
         if vac['salary']['to'] is not None:
             salary_to = vac['salary']['to']
         else:
-            salary_to = 0
+            salary_to = None
     args_vacancy = [vac['id'], vac['employer']['id'], vac['name'], salary_from, salary_to,
                     vac['alternate_url'], edit_description]
     return args_vacancy

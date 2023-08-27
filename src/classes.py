@@ -97,8 +97,11 @@ class DBCreator:
         self.cur.execute("""ALTER TABLE vacancies ADD CONSTRAINT fk_company_id 
                             FOREIGN KEY(company_id) REFERENCES employers(company_id)""")
 
-    def into_table(self, *args, name):
+    def into_table_employers(self, *args, name):
         self.cur.execute(f"INSERT INTO {name} VALUES {args}")
+
+    def into_table_vacancies(self, vac):
+        self.cur.execute(f"insert into vacancies values(%s, %s, %s, %s, %s, %s, %s)", vac)
 
     def conn_close(self):
         return self.conn.close()
@@ -132,11 +135,11 @@ class DBManager:
                             FULL JOIN vacancies USING(company_id)""")
         result = self.cur.fetchall()
         for row in result:
-            if row[2] == 0 and row[3] == 0:
+            if row[2] is None and row[3] is None:
                 salary = 'Не указана'
-            elif row[2] == 0 and row[3] != 0:
+            elif row[2] is None and row[3] is not None:
                 salary = f'до {row[3]}'
-            elif row[2] != 0 and row[3] == 0:
+            elif row[2] is not None and row[3] is None:
                 salary = f'от {row[2]}'
             elif row[2] == row[3]:
                 salary = row[2]
@@ -147,13 +150,13 @@ class DBManager:
 
     def get_avg_salary(self):
         """Получает среднюю зарплату по вакансиям."""
-        self.cur.execute("SELECT * FROM employers")
-        self.cur.fetchall()
+        self.cur.execute("")
+        result = self.cur.fetchall()
 
     def get_vacancies_with_higher_salary(self):
         """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
-        self.cur.execute("SELECT * FROM employers")
-        self.cur.fetchall()
+        self.cur.execute("")
+        result = self.cur.fetchall()
 
     def get_vacancies_with_keyword(self, keyword):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например 'python'."""
