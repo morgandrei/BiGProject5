@@ -1,7 +1,3 @@
-import psycopg2
-import requests
-import time
-import json
 from configparser import ConfigParser
 
 
